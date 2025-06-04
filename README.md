@@ -1,0 +1,1 @@
+自然言語で書いたE2Eテストをclaude code actionを使って実行する
