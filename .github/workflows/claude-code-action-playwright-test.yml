@@ -1,0 +1,53 @@
+name: Claude Code Action Playwright Test
+description: Claude Code Action Playwright Test
+on:
+  workflow_dispatch:
+
+jobs:
+  triage-issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+        node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: run todo app
+        run: npm run serve
+
+      - name: Create prompt
+        run: |
+          mkdir -p /tmp/claude-prompts
+          for file in test-instructions/*.md; do
+            cat "$file"
+            echo ""
+          done > /tmp/claude-prompts/prompt.txt
+
+      - name: Run Claude Code for Playwright Test
+        id: exec-tests
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          prompt_file: /tmp/claude-prompts/prompt.txt
+          system_prompt: "localhostのサーバーは起動済みです"
+          allowed_tools: "Bash,mcp__playwright__browser_close,mcp__playwright__browser_resize,mcp__playwright__browser_console_messages,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_file_upload,mcp__playwright__browser_install,mcp__playwright__browser_press_key,mcp__playwright__browser_navigate,mcp__playwright__browser_navigate_back,mcp__playwright__browser_navigate_forward,mcp__playwright__browser_network_requests,mcp__playwright__browser_pdf_save,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_drag,mcp__playwright__browser_hover,mcp__playwright__browser_type,mcp__playwright__browser_select_option,mcp__playwright__browser_tab_list,mcp__playwright__browser_tab_new,mcp__playwright__browser_tab_select,mcp__playwright__browser_tab_close,mcp__playwright__browser_generate_playwright_test,mcp__playwright__browser_wait_for"
+          mcp_config: .mcp.json
+          timeout_minutes: "5"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      
+      - name: Upload Result
+        if: steps.exec-tests.outputs.conclusion == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-result.md
+          path: ./test-result.md
+          retention-days: 7
