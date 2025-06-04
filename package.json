@@ -1,0 +1,17 @@
+{
+  "name": "typescript-todo-app",
+  "version": "1.0.0",
+  "description": "A simple Todo app built with TypeScript and LocalStorage",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "serve": "npx serve ."
+  },
+  "keywords": ["typescript", "todo", "localstorage"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
