@@ -23,7 +23,11 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: run todo app
-        run: npm run serve
+        run: npm run serve &
+
+      - name: Wait for server to be ready
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
 
       - name: Create prompt
         run: |
